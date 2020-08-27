@@ -84,8 +84,9 @@ sub listar {
     # my $ini = $yday - $per;
     # my $fin = $yday - 1;
 
-    my %data = ();
+    my @data = ();
     my %netw = ();
+    my %dife = ();
     
       # print "$day\n";
       my @net = `ls ./data/$yr`;
@@ -97,7 +98,7 @@ sub listar {
          my @stat = `ls ./data/$yr/$n`;
          foreach my $st (@stat)
          { 
-           print "./data/$yr/$n/$st";
+           # print "./data/$yr/$n/$st";
            chomp $st;
            my @days  = `ls -1r ./data/$yr/$n/$st`;
            my $ant = $yday;
@@ -109,7 +110,11 @@ sub listar {
                    $ant -= 1;
                }
                else {
-                   print "XXXXX : $d  -> $ant -> $yday -> $diff\n"; 
+                   # print "XXXXX : $d  -> $ant -> $yday -> $diff\n"; 
+                   push @data , $st;
+                   $netw{$st} = $n;
+                   $dife{$st} = $diff;
+                   last;   
                }   
            }
           
@@ -125,10 +130,10 @@ sub listar {
          }
        }
 
-    # foreach my $llave (keys %data) {
-    #     print "$llave -> $data{$llave} ->  $netw{$llave}\n";
-    #   # envia_email($llave, $data{$llave}, $netw{$llave}) if $data{$llave} == $per;
-    # }
+    foreach my $llave (@data) {
+        print "$llave\t$netw{$llave}\t$dife{$llave}\n";
+      # envia_email($llave, $data{$llave}, $netw{$llave}) if $data{$llave} == $per;
+    }
 }
 
 sub genera_jul {
