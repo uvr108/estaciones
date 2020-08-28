@@ -27,7 +27,7 @@ foreach my $d ($ini..$fin) {
 }
 =cut
 
-listar($yday, $yr);
+listar($yday - 1, $yr);
 
 sub genera {
 
@@ -84,6 +84,7 @@ sub listar {
     # my $ini = $yday - $per;
     # my $fin = $yday - 1;
 
+    my %datos = ();
     my @data = ();
     my %netw = ();
     my %dife = ();
@@ -110,7 +111,11 @@ sub listar {
                    $ant -= 1;
                }
                else {
-                   # print "XXXXX : $d  -> $ant -> $yday -> $diff\n"; 
+
+                   # print "XXXXX : $d  -> $ant -> $yday -> $diff\n";
+
+                   push @{ $datos{$n}{$st} }, $diff;
+ 
                    push @data , $st;
                    $netw{$st} = $n;
                    $dife{$st} = $diff;
@@ -130,10 +135,13 @@ sub listar {
          }
        }
 
-    foreach my $llave (@data) {
-        print "$llave\t$netw{$llave}\t$dife{$llave}\n";
-      # envia_email($llave, $data{$llave}, $netw{$llave}) if $data{$llave} == $per;
+    # envia_email(%dife, %netw);
+    my $out = "sta\tnet\tdias\n";
+    foreach my $llave (sort { $dife{$b} <=> $dife{$a} } keys %dife) {
+      $out .=  "$llave\t$netw{$llave}\t$dife{$llave}\n";
+    #   # envia_email($llave, $data{$llave}, $netw{$llave}) if $data{$llave} == $per;
     }
+    envia_email($out);
 }
 
 sub genera_jul {
