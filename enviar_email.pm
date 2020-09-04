@@ -26,6 +26,8 @@ sub envia_email
 
     push @lista , "uvergara\@csn.uchile.cl";
     # push @lista , "ramenabar\@csn.uchile.cl";
+    # push @lista , "sebastian\@csn.uchile.cl";
+    # push @lista , "acastro\@csn.uchile.cl";
 
     foreach my $send (@lista)
     {

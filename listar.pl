@@ -8,26 +8,18 @@ use Getopt::Std;
 
 use enviar_email;
 
-my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = gmtime();
+my $yday = $ARGV[0];
+my $yr = $ARGV[1]; 
 
-my $yr = $year + 1900;
 $yday = sprintf "%03d", $yday;
 
 my @stat;
 my @chan;
 my @wave;
 
-my $ini = $yday - 45;
-my $fin = $yday - 1;
-
-=pod
-foreach my $d ($ini..$fin) {
-    genera($d, $yr);
-    print "$d\n";
-}
-=cut
-
-listar($yday - 1, $yr);
+genera($yday, $yr);
+sleep(5);
+listar($yday , $yr);
 
 sub genera {
 
@@ -36,112 +28,38 @@ sub genera {
 
     # Si no existe año lo creo
 
+    print "[$yday|$yr]"; 
+
     if ( not -d "./data/$yr") {
         mkdir "./data/$yr";
     }
 
-
-    my @net = `ls /ssn/seiscomp/archive/$yr`;
+    my @net = `ls /ssn/seiscomp/archive/$yr`;  # OJO EN DURO
 
     foreach my $n (@net) {
-        print $n;
         chomp $n;
-        # Si no existe network la creo 
-        if ( not -d "./data/$yr/$n") {
-            mkdir "./data/$yr/$n";
-        }
-    
+        print "NET : $n\n";
         @stat =  `ls /ssn/seiscomp/archive/$yr/$n`;
         foreach my $st (@stat)
         {   chomp $st;
-            # Si no exite estación la creo
-            if ( not -d "./data/$yr/$n/$st") {
-                mkdir "./data/$yr/$n/$st";
-            }
-
-            @chan = `ls /ssn/seiscomp/archive/$yr/$n/$st`;
-            foreach my $ch (@chan)
-            {   chomp $st;
-                @wave = `ls /ssn/seiscomp/archive/$yr/$n/$st/$ch`;
+             # Si no exite estación la creo
+             print "STAT : $st\n";
+             @chan = `ls /ssn/seiscomp/archive/$yr/$n/$st`;
+             foreach my $ch (@chan)
+             {   chomp $ch; 
+           
+                 if ( $ch =~ m/[H|B|N]H[ZNE12].D$/ )
+                 {        
+                     @wave = `ls /ssn/seiscomp/archive/$yr/$n/$st/$ch`;
             
-                foreach my $wav (@wave)
-                { 
-                    if  ($wav =~ m/.+[H|B]H[ZNE12].D.+$yday$/) { genera_jul($n,$st,$yr,$yday,$wav); }
-                    if  ($wav =~ m/.+H[N|L][ZNE].D.+$yday$/) { genera_jul($n,$st,$yr,$yday,$wav); }
-                    if  ($wav =~ m/.+BN[ZNE].D.+$yday$/) { genera_jul($n,$st,$yr,$yday,$wav); }
-                    if  ($wav =~ m/.+EH[ZNE].D.+$yday$/) { genera_jul($n,$st,$yr,$yday,$wav); }
-                }
-            }   
+                     foreach my $wav (@wave)
+                     {   chomp $wav;
+                         genera_jul($n, $st, $yr, $yday, $wav) if $wav =~ m/\d{3}$/;
+                     }
+                }   
+            }
         }
-    }
-}
-
-sub listar {
-
-    my $yday = $_[0] - 1;
-    my $yr = $_[1];
-    # my $per = $_[2];
-    # my $ini = $yday - $per;
-    # my $fin = $yday - 1;
-
-    my %datos = ();
-    my @data = ();
-    my %netw = ();
-    my %dife = ();
-    
-      # print "$day\n";
-      my @net = `ls ./data/$yr`;
-      foreach my $n (@net)
-      {   chomp $n;
-         
-         # if ($cont == 0) { $data{$n} = 0;   }
- 
-         my @stat = `ls ./data/$yr/$n`;
-         foreach my $st (@stat)
-         { 
-           # print "./data/$yr/$n/$st";
-           chomp $st;
-           my @days  = `ls -1r ./data/$yr/$n/$st`;
-           my $ant = $yday;
-           foreach my $d  (@days) {
-               chomp $d;
-               my $diff = $yday - $d;
-               if ( $d == $ant ) {
-                   # print "$d  -> $ant -> $yday -> $diff\n"; 
-                   $ant -= 1;
-               }
-               else {
-
-                   # print "XXXXX : $d  -> $ant -> $yday -> $diff\n";
-
-                   push @{ $datos{$n}{$st} }, $diff;
- 
-                   push @data , $st;
-                   $netw{$st} = $n;
-                   $dife{$st} = $diff;
-                   last;   
-               }   
-           }
-          
-           # if ( -e  "./data/$yr/$n/$st/$day" )
-           # {
-           # }
-           # else
-           # {
-           #   $data{$st} += 1;
-           #   $netw{$st} = $n;
-           #   # print "$n -> $st -> $day -> $data{$st}\n";
-           # }
-         }
-       }
-
-    # envia_email(%dife, %netw);
-    my $out = "sta\tnet\tdias\n";
-    foreach my $llave (sort { $dife{$b} <=> $dife{$a} } keys %dife) {
-      $out .=  "$llave\t$netw{$llave}\t$dife{$llave}\n";
-    #   # envia_email($llave, $data{$llave}, $netw{$llave}) if $data{$llave} == $per;
-    }
-    envia_email($out);
+   }
 }
 
 sub genera_jul {
@@ -152,16 +70,85 @@ sub genera_jul {
     my $yday = $_[3];
     my $wav = $_[4];
    
-    chomp $wav;
- 
-    if ( not -d "./data/$yr/$n/$st/$yday") {
-         mkdir "./data/$yr/$n/$st/$yday";
-    }
+    my $dia = substr $wav , -3;
+    
+    if ( int($dia) > 0 and int($dia) == $yday  )
+    {
 
-    if ( -d "./data/$yr/$n/$st/$yday" ) {
-        my $out =  `echo '$wav' >> ./data/$yr/$n/$st/$yday/$st.txt`; 
+        chomp $wav;
+
+        print "./data/$yr/$n/$st/$dia   |   $wav\n";
+
+        if ( not -d "./data/$yr/$n") {
+            mkdir "./data/$yr/$n";
+        }
+ 
+        if ( not -d "./data/$yr/$n/$st") {
+            mkdir "./data/$yr/$n/$st";
+        }
+
+        if ( not -d "./data/$yr/$n/$st/$dia") {
+            mkdir "./data/$yr/$n/$st/$dia";
+        }
+
+        if ( -d "./data/$yr/$n/$st/$dia" ) {
+            my $out =  `echo '$wav' >> ./data/$yr/$n/$st/$dia/$st.txt`; 
+        }
     } 
 }
+
+sub listar {
+
+    my $yday = $_[0];
+    my $yr = $_[1];
+
+    my %datos = ();
+    my @data = ();
+    my %netw = ();
+    my %dife = ();
+    
+      my @net = `ls ./data/$yr`;
+      foreach my $n (@net)
+      {   chomp $n;
+         
+         my @stat = `ls ./data/$yr/$n`;
+         foreach my $st (@stat)
+         { 
+           # print "./data/$yr/$n/$st";
+           chomp $st;
+           my @days  = `ls -1r ./data/$yr/$n/$st`;
+           my $ant = $yday;
+
+           foreach my $d  (@days) {
+
+               chomp $d;
+
+               my $diff = $ant - $d;
+
+               if ($diff  == 0) {
+               }
+               else  {
+                     # print "NO -> $yr $n $st $d $ant $diff\n";
+                     # push @{ $datos{$n}{$st} }, $diff;
+ 
+                     push @data , $st;
+                     $netw{$st} = $n;
+                     $dife{$st} = $diff;
+               }
+               $ant -= 1;
+               last;
+
+           }
+         }
+       }
+
+    my $out = "sta\tnet\tdias\n";
+    foreach my $llave (sort { $dife{$b} <=> $dife{$a} } keys %dife) {
+      $out .=  "$llave\t$netw{$llave}\t$dife{$llave}\n";
+    }
+    envia_email($out);
+}
+
 
 
 # .+[[H|B]H[ZNE12].D.+
