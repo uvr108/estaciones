@@ -13,9 +13,16 @@ pwd
 
 YR=`date "+%Y"`
 MO=`date "+%m"`
-DA=`date "+%d"`
+DA=`date "+%u"`
 JL=`date "+%j"`
 
 echo $JL $YR
 
-./listar.pl $JL $YR
+# for i in {1..266}
+# do
+#    var=$(printf '%03d' $i) 
+#    echo $var
+#    ./listar.pl $var $YR
+# done
+
+./listar.pl $JL $YR $DA

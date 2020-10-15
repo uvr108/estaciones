@@ -10,6 +10,7 @@ use enviar_email;
 
 my $yday = $ARGV[0];
 my $yr = $ARGV[1]; 
+my $da = $ARGV[2];
 
 $yday = sprintf "%03d", $yday;
 
@@ -19,7 +20,7 @@ my @wave;
 
 genera($yday, $yr);
 sleep(5);
-listar($yday , $yr);
+listar($yday , $yr, $da);
 
 sub genera {
 
@@ -101,6 +102,7 @@ sub listar {
 
     my $yday = $_[0];
     my $yr = $_[1];
+    my $da = $_[2];
 
     my %datos = ();
     my @data = ();
@@ -146,7 +148,9 @@ sub listar {
     foreach my $llave (sort { $dife{$b} <=> $dife{$a} } keys %dife) {
       $out .=  "$llave\t$netw{$llave}\t$dife{$llave}\n";
     }
-    envia_email($out);
+    print "$da\n";
+       envia_email($da, $out);
+    }
 }
 
 

@@ -7,7 +7,8 @@ use Text::Unidecode;
 
 sub envia_email
 {
-    my $message = $_[0];
+    my $da = $_[0];
+    my $message = $_[1];
 
     my $from;
     my $subject;
@@ -23,11 +24,15 @@ sub envia_email
     }
 
     my @lista = ();
-
-    push @lista , "uvergara\@csn.uchile.cl";
-    # push @lista , "ramenabar\@csn.uchile.cl";
-    # push @lista , "sebastian\@csn.uchile.cl";
-    # push @lista , "acastro\@csn.uchile.cl";
+    if (int($da) == 4) {
+        push @lista , "uvergara\@csn.uchile.cl";
+        push @lista , "ramenabar\@csn.uchile.cl";
+        push @lista , "sebastian\@csn.uchile.cl";
+        push @lista , "acastro\@csn.uchile.cl";
+    } else {
+        push @lista , "uvergara\@csn.uchile.cl";
+    }
+      
 
     foreach my $send (@lista)
     {
