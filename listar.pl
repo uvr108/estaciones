@@ -18,6 +18,29 @@ my @stat;
 my @chan;
 my @wave;
 
+my %estaciones = (
+   'IN42'  =>  ['C1',344],
+   'GO02'  =>  ['C',301],
+   'AY01'  =>  ['C1',231],
+   'HMBCX' =>  ['CX',211],
+   'PATCX' =>  ['CX',203],
+   'MG04'  =>  ['C1',186],
+   'VA06'  =>  ['C1',185],
+   'MG01'  =>  ['C1',185],
+   'LC02'  =>  ['C1',142],
+   'AY06'  =>  ['C1',133],
+   'GO09'  =>  ['C',110],
+   'AY02'  =>  ['C1',34],
+   'AC07'  =>  ['C1',31],
+   'GO03'  =>  ['C',21],
+   'PX06'  =>  ['CX',8],
+   'PB10'  =>  ['CX',1],
+   'MG02'  =>  ['C1',1]
+);
+
+
+# print "$lista\n";
+
 genera($yday, $yr);
 sleep(5);
 listar($yday , $yr, $da);
@@ -35,16 +58,16 @@ sub genera {
         mkdir "./data/$yr";
     }
 
-    my @net = `ls /ssn/seiscomp/archive/$yr`;  # OJO EN DURO
+    my @net = grep { /^C/  } `ls /ssn/seiscomp/archive/$yr`;
 
     foreach my $n (@net) {
         chomp $n;
-        print "NET : $n\n";
+        # print "NET : [$n]\n";
         @stat =  `ls /ssn/seiscomp/archive/$yr/$n`;
         foreach my $st (@stat)
         {   chomp $st;
              # Si no exite estación la creo
-             print "STAT : $st\n";
+             # print "STAT : $n $st\n";
              @chan = `ls /ssn/seiscomp/archive/$yr/$n/$st`;
              foreach my $ch (@chan)
              {   chomp $ch; 
@@ -55,6 +78,7 @@ sub genera {
             
                      foreach my $wav (@wave)
                      {   chomp $wav;
+                         
                          genera_jul($n, $st, $yr, $yday, $wav) if $wav =~ m/\d{3}$/;
                      }
                 }   
@@ -98,6 +122,7 @@ sub genera_jul {
     } 
 }
 
+
 sub listar {
 
     my $yday = $_[0];
@@ -108,6 +133,8 @@ sub listar {
     my @data = ();
     my %netw = ();
     my %dife = ();
+
+    my @todos = ();
     
       my @net = `ls ./data/$yr`;
       foreach my $n (@net)
@@ -118,6 +145,7 @@ sub listar {
          { 
            # print "./data/$yr/$n/$st";
            chomp $st;
+           push(@todos, $st);
            my @days  = `ls -1r ./data/$yr/$n/$st`;
            my $ant = $yday;
 
@@ -126,16 +154,13 @@ sub listar {
                chomp $d;
 
                my $diff = $ant - $d;
-
                if ($diff  == 0) {
                }
                else  {
-                     # print "NO -> $yr $n $st $d $ant $diff\n";
-                     # push @{ $datos{$n}{$st} }, $diff;
- 
                      push @data , $st;
+                     # print "diff -> $diff data  [@data]\n";
                      $netw{$st} = $n;
-                     $dife{$st} = $diff;
+                     $dife{$st} = $diff; 
                }
                $ant -= 1;
                last;
@@ -144,13 +169,46 @@ sub listar {
          }
        }
 
+
+
+    while ( my ($clave, $valor) = each %estaciones )
+    {
+        # print "$clave  => $valor->[0] $valor->[1]\n"  if !examina($clave);
+        if (!examina($clave)) {
+          $netw{$clave} = $valor->[0];
+          $dife{$clave} = $valor->[1] + $yday;
+        }
+    }             
+
     my $out = "sta\tnet\tdias\n";
+
     foreach my $llave (sort { $dife{$b} <=> $dife{$a} } keys %dife) {
       $out .=  "$llave\t$netw{$llave}\t$dife{$llave}\n";
     }
-    print "$da\n";
-       envia_email($da, $out);
-    }
+
+    print "$da | [$out]\n";
+
+    sub examina {
+
+        my $st = $_[0];
+        chomp($st);
+        if (grep $_ eq $st, @todos) {
+            return 1;
+        } else {
+            return 0; 
+        } 
+        
+    } 
+    # while ( my ($clave, $valor) = each %estaciones )
+    # {
+    #     print $clave . " => " . $valor . "\n";
+    # }             
+    
+    # my $lista = $$puntero{$st}; 
+    # print "lista $st -> $lista (int($lista)+int($yday))\n" if defined($lista);
+
+
+    envia_email($da, $out);
 }
 
 

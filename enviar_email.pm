@@ -24,7 +24,7 @@ sub envia_email
     }
 
     my @lista = ();
-    if (int($da) == 4) {
+    if ($da == 4) {
         push @lista , "uvergara\@csn.uchile.cl";
         push @lista , "ramenabar\@csn.uchile.cl";
         push @lista , "sebastian\@csn.uchile.cl";

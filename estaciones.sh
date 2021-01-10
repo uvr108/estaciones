@@ -16,13 +16,13 @@ MO=`date "+%m"`
 DA=`date "+%u"`
 JL=`date "+%j"`
 
-echo $JL $YR
+echo $JL $YR $DA
 
-# for i in {1..266}
+# for i in {1..9}
 # do
 #    var=$(printf '%03d' $i) 
 #    echo $var
-#    ./listar.pl $var $YR
+#    ./listar.pl $var 2021 1
 # done
 
 ./listar.pl $JL $YR $DA
