@@ -15,7 +15,7 @@ sub envia_email
     my $subject_decoded;
 
     $from    = "From: noreply\@csn.uchile.cl\n";
-    $subject = "Subject: Alerta estaciones caida\n";
+    $subject = "Subject: Alerta estaciones caidas\n";
     {
             use utf8;
             $subject_decoded = $subject;
@@ -29,6 +29,8 @@ sub envia_email
         push @lista , "ramenabar\@csn.uchile.cl";
         push @lista , "sebastian\@csn.uchile.cl";
         push @lista , "acastro\@csn.uchile.cl";
+        push @lista , "sgc\@csn.uchile.cl";
+        push @lista , "mmardones\@csn.uchile.cl";
     } else {
         push @lista , "uvergara\@csn.uchile.cl";
     }
